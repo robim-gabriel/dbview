@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <getopt.h>
+#include <unistd.h>
+
+#include "file.h"
+#include "common.h"
 
 void print_usage(char *argv[]) {
 	printf("Usage: %s -n -f <database file>\n", argv[0]);
@@ -13,6 +17,7 @@ int main(int argc, char *argv[]) {
 	char *filepath = NULL;
 	int opt;
 	bool newfile = false;
+	int dbfd = -1;
 
 	while ((opt = getopt(argc, argv, "nf:")) != -1) {
 		switch (opt) {
@@ -37,12 +42,20 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (newfile) {
-		printf("Handle file creation here\n");
+		dbfd = create_db_file(filepath);
+		if (dbfd == STATUS_ERROR) { 
+			printf("Failed to create database file\n"); 
+			return -1;
+		}
 	} else {
-		printf("Open file if it already exists\n");
+		dbfd = open_db_file(filepath);
+		if (dbfd == STATUS_ERROR) {
+			printf("Unable to open database file\n");
+			return -1;
+		}
 	}
 
-	printf("Close file descriptor opened and/or created\n");
+	close(dbfd);
 
 	return 0;
 }
