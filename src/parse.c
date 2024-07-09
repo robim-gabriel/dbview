@@ -7,6 +7,39 @@
 #include "common.h"
 #include "parse.h"
 
+int read_employees(int fd, struct dbheader_t *db_header, struct employee_t **employees_out) {
+	if (fd < 0) {
+		printf("Invalid file descriptor\n");
+		return STATUS_ERROR;
+	}
+
+	if (db_header == NULL) {
+		printf("NULL database header\n");
+		return STATUS_ERROR;
+	}
+
+	struct employee_t *cur_employees = calloc(db_header->count, sizeof(struct employee_t));
+	if (cur_employees == NULL) {
+		perror("calloc");
+		return STATUS_ERROR;
+	}
+
+	if (read(fd, cur_employees, db_header->count * sizeof(struct employee_t)) != db_header->count * sizeof(struct employee_t)) {
+		perror("read");
+		return STATUS_ERROR;
+	}
+
+	int i = 0;
+	for (; i < db_header->count; i++) {
+		cur_employees[i].id = ntohl(cur_employees[i].id);
+		cur_employees[i].hours = ntohl(cur_employees[i].hours);
+	}
+
+	*employees_out = cur_employees;
+
+	return STATUS_SUCCESS;
+}
+
 int output_file(int fd, struct dbheader_t *db_header) {
 	if (fd < 0) {
 		printf("Invalid file descriptor\n");

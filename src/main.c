@@ -20,14 +20,19 @@ int main(int argc, char *argv[]) {
 	bool newfile = false;
 	int dbfd = -1;
 	struct dbheader_t *db_header = NULL;
+	struct employee_t *employees = NULL;
+	char *addstr = NULL;
 
-	while ((opt = getopt(argc, argv, "nf:")) != -1) {
+	while ((opt = getopt(argc, argv, "nf:a:")) != -1) {
 		switch (opt) {
 			case 'n':
 				newfile = true;
 				break;
 			case 'f':
 				filepath = optarg;
+				break;
+			case 'a':
+				addstr = optarg;
 				break;
 			case '?':
 				printf("Unknown flag -%c\n", opt);
@@ -61,11 +66,15 @@ int main(int argc, char *argv[]) {
 			return -1;
 		}
 	
-		// TODO: Still need to write to the file otherwise it will always fail to validate the header
 		if (validate_db_header(dbfd, &db_header) == STATUS_ERROR) {
 			printf("Failed to validate database header\n");
 			return -1;
 		}
+	}
+
+	if (read_employees(dbfd, db_header, &employees) == STATUS_ERROR) {
+		printf("Failed to read employees\n");
+		return -1;
 	}
 	
 	if (output_file(dbfd, db_header) == STATUS_ERROR) {
