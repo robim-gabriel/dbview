@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <getopt.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include "file.h"
 #include "common.h"
@@ -52,6 +53,7 @@ int main(int argc, char *argv[]) {
 		dbfd = create_db_file(filepath);
 		if (dbfd == STATUS_ERROR) { 
 			printf("Failed to create database file\n"); 
+			
 			return -1;
 		}
 		
@@ -77,7 +79,14 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 	
-	if (output_file(dbfd, db_header) == STATUS_ERROR) {
+	if (addstr) {
+		if (add_employee(db_header, &employees, addstr) == STATUS_ERROR) {
+			printf("Failed to add employee to database\n");
+			return -1;
+		}
+	}
+
+	if (output_file(dbfd, db_header, employees) == STATUS_ERROR) {
 		printf("Failed to write to database file descriptor\n");
 		return -1;
 	}
@@ -86,6 +95,9 @@ int main(int argc, char *argv[]) {
 		perror("close");
 		return -1;
 	}
+
+	free(db_header);
+	free(employees);
 
 	return 0;
 }

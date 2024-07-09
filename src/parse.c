@@ -3,9 +3,44 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <arpa/inet.h>
+#include <string.h>
+#include <time.h>
 
 #include "common.h"
 #include "parse.h"
+
+int add_employee(struct dbheader_t *db_header, struct employee_t **employees, char *addstr) {
+	if (db_header == NULL) {
+		printf("NULL database header\n");
+		return STATUS_ERROR;
+	}
+
+	char *name = strtok(addstr, ",");
+	char *address = strtok(NULL, ",");
+	char *hours = strtok(NULL, ",");
+	
+	db_header->count++;
+	struct employee_t *updated_employees = calloc(db_header->count, sizeof(struct employee_t));
+	if (updated_employees == NULL) {
+		perror("calloc");
+		return STATUS_ERROR;
+	}
+
+	if (*employees != NULL) {
+		memcpy(updated_employees, *employees, (db_header->count - 1) * sizeof(struct employee_t));
+		free(*employees);
+	}
+
+	updated_employees[db_header->count-1].id = time(NULL);
+	strncpy(updated_employees[db_header->count-1].name, name, sizeof(updated_employees[db_header->count-1].name));
+	strncpy(updated_employees[db_header->count-1].address, address, sizeof(updated_employees[db_header->count-1].address));
+	updated_employees[db_header->count-1].hours = atoi(hours);
+	
+	*employees = updated_employees;
+	db_header->filesize += sizeof(struct employee_t);
+
+	return STATUS_SUCCESS;
+}
 
 int read_employees(int fd, struct dbheader_t *db_header, struct employee_t **employees_out) {
 	if (fd < 0) {
@@ -26,6 +61,7 @@ int read_employees(int fd, struct dbheader_t *db_header, struct employee_t **emp
 
 	if (read(fd, cur_employees, db_header->count * sizeof(struct employee_t)) != db_header->count * sizeof(struct employee_t)) {
 		perror("read");
+		free(cur_employees);
 		return STATUS_ERROR;
 	}
 
@@ -40,7 +76,7 @@ int read_employees(int fd, struct dbheader_t *db_header, struct employee_t **emp
 	return STATUS_SUCCESS;
 }
 
-int output_file(int fd, struct dbheader_t *db_header) {
+int output_file(int fd, struct dbheader_t *db_header, struct employee_t *employees) {
 	if (fd < 0) {
 		printf("Invalid file descriptor\n");
 		return STATUS_ERROR;
@@ -50,6 +86,8 @@ int output_file(int fd, struct dbheader_t *db_header) {
 		printf("NULL database header\n");
 		return STATUS_ERROR;
 	}
+	
+	int count = db_header->count;
 
 	db_header->magic = htonl(db_header->magic);
 	db_header->filesize = htonl(db_header->filesize);
@@ -64,6 +102,16 @@ int output_file(int fd, struct dbheader_t *db_header) {
 	if (write(fd, db_header, sizeof(struct dbheader_t)) != sizeof(struct dbheader_t)) {
 		perror("write");
 		return STATUS_ERROR;
+	}
+	
+	int i = 0;
+	for (; i < count; i++) {
+		employees[i].id = htonl(employees[i].id);
+		employees[i].hours = htonl(employees[i].hours);
+		if (write(fd, &employees[i], sizeof(struct employee_t)) != sizeof(struct employee_t)) {
+			perror("write");
+			return STATUS_ERROR;
+		}
 	}
 
 	return STATUS_SUCCESS;
