@@ -7,6 +7,35 @@
 #include "common.h"
 #include "parse.h"
 
+int output_file(int fd, struct dbheader_t *db_header) {
+	if (fd < 0) {
+		printf("Invalid file descriptor\n");
+		return STATUS_ERROR;
+	}
+
+	if (db_header == NULL) {
+		printf("NULL database header\n");
+		return STATUS_ERROR;
+	}
+
+	db_header->magic = htonl(db_header->magic);
+	db_header->filesize = htonl(db_header->filesize);
+	db_header->version = htons(db_header->version);
+	db_header->count = htons(db_header->count);
+
+	if (lseek(fd, 0, SEEK_SET) == (off_t) -1 ) {
+		perror("lseek");
+		return STATUS_ERROR;
+	}
+
+	if (write(fd, db_header, sizeof(struct dbheader_t)) != sizeof(struct dbheader_t)) {
+		perror("write");
+		return STATUS_ERROR;
+	}
+
+	return STATUS_SUCCESS;
+}
+
 int validate_db_header(int fd, struct dbheader_t **header_out) {
 	if (fd < 0) {
 		printf("Invalid file descriptor\n");
@@ -50,6 +79,8 @@ int validate_db_header(int fd, struct dbheader_t **header_out) {
 		return STATUS_ERROR;
 	}
 	
+	*header_out = db_header;
+
 	return STATUS_SUCCESS;
 }
 

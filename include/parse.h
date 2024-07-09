@@ -12,5 +12,6 @@ struct dbheader_t {
 
 int create_db_header(int fd, struct dbheader_t **header_out);
 int validate_db_header(int fd, struct dbheader_t **header_out);
+int output_file(int fd, struct dbheader_t *db_header);
 
 #endif

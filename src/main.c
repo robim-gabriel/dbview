@@ -67,8 +67,16 @@ int main(int argc, char *argv[]) {
 			return -1;
 		}
 	}
+	
+	if (output_file(dbfd, db_header) == STATUS_ERROR) {
+		printf("Failed to write to database file descriptor\n");
+		return -1;
+	}
 
-	close(dbfd);
+	if (close(dbfd) == STATUS_ERROR) {
+		perror("close");
+		return -1;
+	}
 
 	return 0;
 }
