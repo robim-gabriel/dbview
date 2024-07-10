@@ -22,10 +22,11 @@ int main(int argc, char *argv[]) {
 	int dbfd = -1;
 	struct dbheader_t *db_header = NULL;
 	struct employee_t *employees = NULL;
-	char *addstr = NULL;
+	char *add_str = NULL;
 	bool list = false;
+	char *update_str = NULL;
 
-	while ((opt = getopt(argc, argv, "nf:a:l")) != -1) {
+	while ((opt = getopt(argc, argv, "nf:a:lu:")) != -1) {
 		switch (opt) {
 			case 'n':
 				newfile = true;
@@ -34,10 +35,13 @@ int main(int argc, char *argv[]) {
 				filepath = optarg;
 				break;
 			case 'a':
-				addstr = optarg;
+				add_str = optarg;
 				break;
 			case 'l':
 				list = true;
+				break;
+			case 'u':
+				update_str = optarg;
 				break;
 			case '?':
 				printf("Unknown flag -%c\n", opt);
@@ -83,12 +87,19 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 	
-	if (addstr) {
-		if (add_employee(db_header, &employees, addstr) == STATUS_ERROR) {
+	if (add_str) {
+		if (add_employee(db_header, &employees, add_str) == STATUS_ERROR) {
 			printf("Failed to add employee to database\n");
 			return -1;
 		}
 	}
+
+	if (update_str) {
+		if (update_employee(db_header, employees, update_str) == STATUS_ERROR) {
+			printf("Unable to update employee\n");
+			return -1;
+		}
+	};
 
 	if (list) {
 		if (list_employees(db_header, employees) == STATUS_ERROR) {

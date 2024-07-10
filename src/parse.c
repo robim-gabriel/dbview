@@ -5,9 +5,52 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <time.h>
+#include <stdbool.h>
 
 #include "common.h"
 #include "parse.h"
+
+int update_employee(struct dbheader_t *db_header, struct employee_t *employees, char *update_str) {
+	if (db_header == NULL) {
+		printf("NULL database header\n");
+		return STATUS_ERROR;
+	}
+
+	if (db_header->count == 0) {
+		printf("Empty database\n");
+		return STATUS_ERROR;
+	}
+	
+	if (employees == NULL) {
+		printf("NULL employee pointer\n");
+		return STATUS_ERROR;
+	}
+
+	char *name = strtok(update_str, ",");
+	char *hours = strtok(NULL, ",");
+	
+	if (name == NULL || hours == NULL) {
+		printf("Invalid update_str format\n");
+		return STATUS_ERROR;
+	}
+
+	int i = 0;
+	bool found = false;
+	for (; i < db_header->count; i++) {
+		if (strcmp(employees[i].name, name) == 0) {
+			found = true;
+			employees[i].hours = atoi(hours);
+			break;
+		}
+	}
+
+	if (found) {
+		return STATUS_SUCCESS;
+	} else {
+		printf("Employee not found\n");
+		return STATUS_ERROR;
+	}
+}
 
 int list_employees(struct dbheader_t *db_header, struct employee_t *employees) {
 	if (db_header == NULL) {
@@ -35,13 +78,13 @@ int list_employees(struct dbheader_t *db_header, struct employee_t *employees) {
 	return STATUS_SUCCESS;
 }
 
-int add_employee(struct dbheader_t *db_header, struct employee_t **employees, char *addstr) {
+int add_employee(struct dbheader_t *db_header, struct employee_t **employees, char *add_str) {
 	if (db_header == NULL) {
 		printf("NULL database header\n");
 		return STATUS_ERROR;
 	}
 
-	char *name = strtok(addstr, ",");
+	char *name = strtok(add_str, ",");
 	char *address = strtok(NULL, ",");
 	char *hours = strtok(NULL, ",");
 	
