@@ -12,10 +12,13 @@ default: $(TARGET)
 
 check-leaks: $(TARGET)
 	rm -f ./employee.db
-	valgrind --leak-check=full ./$(TARGET) -f ./employee.db -n
-	valgrind --leak-check=full ./$(TARGET) -f ./employee.db
-	valgrind --leak-check=full ./$(TARGET) -f ./employee.db -a "D.B Cooper,404 Nowhere Ln.,26"
-	valgrind --leak-check=full ./$(TARGET) -f ./employee.db -l
+	valgrind --leak-check=full -s ./$(TARGET) -f ./employee.db -n
+	valgrind --leak-check=full -s ./$(TARGET) -f ./employee.db
+	valgrind --leak-check=full -s ./$(TARGET) -f ./employee.db -a "John Doe,101 Help Blvd.,40"
+	valgrind --leak-check=full -s ./$(TARGET) -f ./employee.db -a "Jane Doe,123 Fake St.,40"
+	valgrind --leak-check=full -s ./$(TARGET) -f ./employee.db -a "D.B Cooper,404 Nowhere Ln.,26"
+	valgrind --leak-check=full -s ./$(TARGET) -f ./employee.db -l
+	valgrind --leak-check=full -s ./$(TARGET) -f ./employee.db -u "John Doe,69"
 
 clean:
 	rm -f obj/*.o
