@@ -9,6 +9,32 @@
 #include "common.h"
 #include "parse.h"
 
+int list_employees(struct dbheader_t *db_header, struct employee_t *employees) {
+	if (db_header == NULL) {
+		printf("NULL database header\n");
+		return STATUS_ERROR;
+	}
+
+	if (db_header->count == 0) {
+		printf("Cannot print an empty database\n");
+		return STATUS_ERROR;
+	}
+	
+	if (employees == NULL) {
+		printf("NULL employee pointer\n");
+		return STATUS_ERROR;
+	}
+
+	int i = 0;
+	for (; i < db_header->count; i++) {
+		printf("Employee: %d\n", employees[i].id);
+		printf("\tName: %s\n\tAddress: %s\n", employees[i].name, employees[i].address);
+		printf("\tHours: %d\n", employees[i].hours);
+	}
+
+	return STATUS_SUCCESS;
+}
+
 int add_employee(struct dbheader_t *db_header, struct employee_t **employees, char *addstr) {
 	if (db_header == NULL) {
 		printf("NULL database header\n");

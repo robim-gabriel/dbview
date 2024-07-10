@@ -23,8 +23,9 @@ int main(int argc, char *argv[]) {
 	struct dbheader_t *db_header = NULL;
 	struct employee_t *employees = NULL;
 	char *addstr = NULL;
+	bool list = false;
 
-	while ((opt = getopt(argc, argv, "nf:a:")) != -1) {
+	while ((opt = getopt(argc, argv, "nf:a:l")) != -1) {
 		switch (opt) {
 			case 'n':
 				newfile = true;
@@ -34,6 +35,9 @@ int main(int argc, char *argv[]) {
 				break;
 			case 'a':
 				addstr = optarg;
+				break;
+			case 'l':
+				list = true;
 				break;
 			case '?':
 				printf("Unknown flag -%c\n", opt);
@@ -82,6 +86,13 @@ int main(int argc, char *argv[]) {
 	if (addstr) {
 		if (add_employee(db_header, &employees, addstr) == STATUS_ERROR) {
 			printf("Failed to add employee to database\n");
+			return -1;
+		}
+	}
+
+	if (list) {
+		if (list_employees(db_header, employees) == STATUS_ERROR) {
+			printf("Could not print employees\n");
 			return -1;
 		}
 	}
