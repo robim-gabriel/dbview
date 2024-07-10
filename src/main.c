@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
 
 	if (list) {
 		if (list_employees(db_header, employees) == STATUS_ERROR) {
-			printf("Could not print employees\n");
+			printf("Could not list employees\n");
 			return -1;
 		}
 	}
