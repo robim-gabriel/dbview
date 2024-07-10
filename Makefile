@@ -13,7 +13,9 @@ default: $(TARGET)
 check-leaks: $(TARGET)
 	rm -f ./employee.db
 	valgrind --leak-check=full ./$(TARGET) -f ./employee.db -n
+	valgrind --leak-check=full ./$(TARGET) -f ./employee.db
 	valgrind --leak-check=full ./$(TARGET) -f ./employee.db -a "D.B Cooper,404 Nowhere Ln.,26"
+	valgrind --leak-check=full ./$(TARGET) -f ./employee.db -l
 
 clean:
 	rm -f obj/*.o
