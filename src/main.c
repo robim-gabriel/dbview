@@ -25,8 +25,9 @@ int main(int argc, char *argv[]) {
 	char *add_str = NULL;
 	bool list = false;
 	char *update_str = NULL;
+	char *remove_str = NULL;
 
-	while ((opt = getopt(argc, argv, "nf:a:lu:")) != -1) {
+	while ((opt = getopt(argc, argv, "nf:a:lu:d:")) != -1) {
 		switch (opt) {
 			case 'n':
 				newfile = true;
@@ -42,6 +43,9 @@ int main(int argc, char *argv[]) {
 				break;
 			case 'u':
 				update_str = optarg;
+				break;
+			case 'd':
+				remove_str = optarg;
 				break;
 			case '?':
 				printf("Unknown flag -%c\n", opt);
@@ -104,6 +108,13 @@ int main(int argc, char *argv[]) {
 	if (list) {
 		if (list_employees(db_header, employees) == STATUS_ERROR) {
 			printf("Could not list employees\n");
+			return -1;
+		}
+	}
+
+	if (remove_str) {
+		if (delete_employee(db_header, &employees, remove_str) == STATUS_ERROR) {
+			printf("Failed to delete employee from database\n");
 			return -1;
 		}
 	}

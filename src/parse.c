@@ -10,6 +10,62 @@
 #include "common.h"
 #include "parse.h"
 
+int delete_employee(struct dbheader_t *db_header, struct employee_t **employees, char *remove_str) {
+	if (db_header == NULL) {
+		printf("NULL database header\n");
+		return STATUS_ERROR;
+	}
+	
+	if (db_header->count == 0) {
+		printf("Empty database\n");
+		return STATUS_ERROR;
+	}
+	
+	if (*employees == NULL) {
+		printf("NULL employee pointer\n");
+		return STATUS_ERROR;
+	}
+
+	int i = 0;
+	bool not_found = true;
+	while (i < db_header->count) {
+		if (strcmp((*employees)[i].name, remove_str) == 0) {
+			not_found = false;
+			break;
+		}
+		i++;
+	}
+
+	if (not_found) {
+		printf("Employee not found\n");
+		return STATUS_ERROR;
+	}
+
+	int new_count = db_header->count - 1;
+	struct employee_t *cur_employees = calloc(new_count, sizeof(struct employee_t));
+	if (cur_employees == NULL) {
+		perror("calloc");
+		return STATUS_ERROR;
+	}
+
+	int j = 0;
+	int k = 0;
+	for (; k < db_header->count; k++) {
+		if (strcmp((*employees)[k].name, remove_str) != 0) {
+			cur_employees[j].id = (*employees)[k].id;
+			strcpy(cur_employees[j].name, (*employees)[k].name);
+			strcpy(cur_employees[j].address, (*employees)[k].address);
+			cur_employees[j++].hours = (*employees)[k].hours;
+		}
+	}
+
+	free(*employees);
+	*employees = cur_employees;
+	db_header->count--;
+	db_header->filesize -= sizeof(struct employee_t);
+	return STATUS_SUCCESS;
+}
+
 int update_employee(struct dbheader_t *db_header, struct employee_t *employees, char *update_str) {
 	if (db_header == NULL) {
 		printf("NULL database header\n");
@@ -155,11 +211,22 @@ int output_file(int fd, struct dbheader_t *db_header, struct employee_t *employe
 		printf("NULL database header\n");
 		return STATUS_ERROR;
 	}
+
+	/*
+	 *	Eventualy, there will be deletions, which will lead
+	 *	to a corrupted database if the last employee appended
+	 *	isn't removed - because on deletion, every employee gets
+	 *	shifted one position to the left - that's where ftruncate comes in
+	 */	
+	if (ftruncate(fd, db_header->filesize) == STATUS_ERROR) {
+		perror("ftruncate");
+		return STATUS_ERROR;
+	}
 	
 	int count = db_header->count;
 
 	db_header->magic = htonl(db_header->magic);
-	db_header->filesize = htonl(db_header->filesize);
+	db_header->filesize = htonl(sizeof(struct dbheader_t) + count * sizeof(struct employee_t));
 	db_header->version = htons(db_header->version);
 	db_header->count = htons(db_header->count);
 
