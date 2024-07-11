@@ -19,6 +19,9 @@ check-leaks: $(TARGET)
 	valgrind --leak-check=full -s ./$(TARGET) -f ./employee.db -a "D.B Cooper,404 Nowhere Ln.,26"
 	valgrind --leak-check=full -s ./$(TARGET) -f ./employee.db -l
 	valgrind --leak-check=full -s ./$(TARGET) -f ./employee.db -u "John Doe,69"
+	valgrind --leak-check=full -s ./$(TARGET) -f ./employee.db -u "This is a test,20"
+	valgrind --leak-check=full -s ./$(TARGET) -f ./employee.db -d "John Cooper"
+	valgrind --leak-check=full -s ./$(TARGET) -f ./employee.db -d "D.B Cooper"
 
 clean:
 	rm -f obj/*.o
