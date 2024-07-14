@@ -94,6 +94,8 @@ int main(int argc, char *argv[]) {
 	if (add_str) {
 		if (add_employee(db_header, &employees, add_str) == STATUS_ERROR) {
 			printf("Failed to add employee to database\n");
+			free(db_header);
+			free(employees);
 			return -1;
 		}
 	}
@@ -101,6 +103,8 @@ int main(int argc, char *argv[]) {
 	if (update_str) {
 		if (update_employee(db_header, employees, update_str) == STATUS_ERROR) {
 			printf("Unable to update employee\n");
+			free(db_header);
+			free(employees);
 			return -1;
 		}
 	};
@@ -115,6 +119,8 @@ int main(int argc, char *argv[]) {
 	if (remove_str) {
 		if (delete_employee(db_header, &employees, remove_str) == STATUS_ERROR) {
 			printf("Failed to delete employee from database\n");
+			free(db_header);
+			free(employees);
 			return -1;
 		}
 	}
